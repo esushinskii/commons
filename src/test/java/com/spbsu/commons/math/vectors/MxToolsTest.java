@@ -55,4 +55,6 @@ public class MxToolsTest extends TestCase {
     Vec answer = MxTools.solveSystemGaussZeildel(matrix, vector);
     assertEquals(0, VecTools.distance(vector, MxTools.multiply(matrix, answer)), 1e-3);
   }
+
+  // TODO: test for Lanczos algorithm
 }
