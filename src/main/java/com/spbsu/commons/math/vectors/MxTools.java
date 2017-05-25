@@ -211,10 +211,9 @@ public class MxTools {
     final Vec result = new ArrayVec(mx.rows());
     if (vec instanceof ArrayVec && mx instanceof VecBasedMx && ((VecBasedMx) mx).vec instanceof ArrayVec) {
       for (int i = 0; i < rows; i++) {
-        result.set(i, ((ArrayVec) vec).mul((ArrayVec)mx.row(i)));
+        result.set(i, ((ArrayVec) vec).mul((ArrayVec) mx.row(i)));
       }
-    }
-    else {
+    } else {
       for (int i = 0; i < rows; i++) {
         result.set(i, VecTools.multiply(mx.row(i), vec));
       }
@@ -337,8 +336,7 @@ public class MxTools {
     return multiply(transpose(inverseL), inverseL);
   }
 
-  public static Vec solveSystemCholesky(final Mx a, Vec b)
-  {
+  public static Vec solveSystemCholesky(final Mx a, Vec b) {
     return multiply(inverseCholesky(a), b);
   }
 
@@ -423,6 +421,7 @@ public class MxTools {
   public static Vec solveSystemGaussZeildel(Mx a, Vec b) {
     return solveGaussZeildel(a, b, MathTools.EPSILON);
   }
+
   //Converge if a is symmetric positive-definite or
   //a is strictly or irreducibly diagonally dominant
   public static Vec solveGaussZeildel(Mx a, Vec b, double stopCondition) {
@@ -448,8 +447,7 @@ public class MxTools {
           x1.set(i, value / a.get(i, i));
         } else if (Math.abs(value) < MathTools.EPSILON) {
           x1.set(i, 0);
-        }
-        else {
+        } else {
           throw new InvalidParameterException("Matrix must have non-zero diagonal elements");
         }
       }
@@ -474,6 +472,25 @@ public class MxTools {
     public Mx xTrans;
   }
 
-  // TODO: implemantation of the Lanczos algorithm
+  // TODO: implementation of the Lanczos algorithm
+  private static Mx T;
+  private static Mx V;
 
+  private static void performLanczosAlgorithm(Mx a, int m) {
+
+  }
+
+  public static Mx getLanczosT(Mx a, int m) {
+    if (T == null) {
+      performLanczosAlgorithm(a, m);
+    }
+    return T;
+  }
+
+  public static Mx getLanczosV(Mx a, int m) {
+    if (V == null) {
+      performLanczosAlgorithm(a, m);
+    }
+    return V;
+  }
 }
