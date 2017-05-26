@@ -56,5 +56,14 @@ public class MxToolsTest extends TestCase {
     assertEquals(0, VecTools.distance(vector, MxTools.multiply(matrix, answer)), 1e-3);
   }
 
-  // TODO: test for Lanczos algorithm
+  // TODO: tests for Lanczos algorithm
+  public void testGetLanczosT() {
+    Mx t = MxTools.getLanczosT(matrix, matrix.columns());
+    assertEquals(matrix.columns(), t.columns());
+  }
+
+  public void testGetLanczosV() {
+    Mx v = MxTools.getLanczosV(matrix, matrix.columns());
+    assertEquals(matrix.columns(), v.columns());
+  }
 }
