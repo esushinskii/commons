@@ -4,6 +4,7 @@ import com.spbsu.commons.math.MathTools;
 import com.spbsu.commons.math.vectors.impl.mx.VecBasedMx;
 import com.spbsu.commons.math.vectors.impl.vectors.ArrayVec;
 import com.spbsu.commons.math.vectors.impl.vectors.SparseVec;
+import com.spbsu.commons.random.FastRandom;
 import org.apache.commons.math3.random.UnitSphereRandomVectorGenerator;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -474,7 +475,7 @@ public class MxTools {
     public Mx xTrans;
   }
 
-  // TODO: implementation of the Lanczos algorithm
+  // implementation of the Lanczos algorithm
   private static Mx t;
   private static Mx v;
 
@@ -496,15 +497,15 @@ public class MxTools {
     double[] alpha = new double[m + 1];
     double[] betta = new double[m + 1];
 
-    int n = a.rows();
+    int n = a.columns();
 
-    // TODO: unit random vector generator with VecTools
-    UnitSphereRandomVectorGenerator uvg = new UnitSphereRandomVectorGenerator(n);
+    FastRandom rng = new FastRandom();
 
     ArrayList<Vec> aVec = new ArrayList<Vec>(m + 1);
 
     aVec.add(0, new ArrayVec(n));
-    aVec.add(1, new ArrayVec(uvg.nextVector()));
+    Vec rndVec = VecTools.fillGaussian(new ArrayVec(n), rng);
+    aVec.add(1, VecTools.scale(rndVec, 1 / VecTools.norm(rndVec)));
 
     Vec wx;
     Vec w;
