@@ -5,7 +5,7 @@ import com.spbsu.commons.math.vectors.impl.mx.VecBasedMx;
 import com.spbsu.commons.math.vectors.impl.vectors.ArrayVec;
 import com.spbsu.commons.math.vectors.impl.vectors.SparseVec;
 import com.spbsu.commons.random.FastRandom;
-import org.apache.commons.math3.random.UnitSphereRandomVectorGenerator;
+import com.spbsu.commons.util.Pair;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.security.InvalidParameterException;
@@ -475,33 +475,15 @@ public class MxTools {
     public Mx xTrans;
   }
 
-  // implementation of the Lanczos algorithm
-  private static Mx t;
-  private static Mx v;
-
-  public static Mx getLanczosT(final Mx a, final int m) {
-    if (t == null) {
-      performLanczosAlgorithm(a, m);
-    }
-    return t;
-  }
-
-  public static Mx getLanczosV(final Mx a, final int m) {
-    if (v == null) {
-      performLanczosAlgorithm(a, m);
-    }
-    return v;
-  }
-
-  private static void performLanczosAlgorithm(final Mx a, final int m) {
-    double[] alpha = new double[m + 1];
-    double[] betta = new double[m + 1];
+  public static Pair<Mx, Mx> lanczosTridiagonalization(final Mx a, final int T) {
+    double[] alpha = new double[T + 1];
+    double[] betta = new double[T + 1];
 
     int n = a.columns();
 
     FastRandom rng = new FastRandom();
 
-    ArrayList<Vec> aVec = new ArrayList<Vec>(m + 1);
+    ArrayList<Vec> aVec = new ArrayList<Vec>(T + 1);
 
     aVec.add(0, new ArrayVec(n));
     Vec rndVec = VecTools.fillGaussian(new ArrayVec(n), rng);
@@ -510,7 +492,7 @@ public class MxTools {
     Vec wx;
     Vec w;
 
-    for (int i = 1; i < m; i++) {
+    for (int i = 1; i < T; i++) {
       wx = multiply(a, aVec.get(i));
       alpha[i] = VecTools.multiply(wx, aVec.get(i));
       w = VecTools.subtract(wx, VecTools.subtract(VecTools.scale(aVec.get(i), alpha[i]), VecTools.scale(aVec.get(i - 1), betta[i])));
@@ -518,24 +500,26 @@ public class MxTools {
       aVec.add(i + 1, VecTools.scale(w, 1 / betta[i + 1]));
     }
 
-    wx = multiply(a, aVec.get(m));
-    alpha[m] = VecTools.multiply(wx, aVec.get(m));
+    wx = multiply(a, aVec.get(T));
+    alpha[T] = VecTools.multiply(wx, aVec.get(T));
 
     // filling Lanczos tridiagonal matrix T
-    t = new VecBasedMx(m, m);
-    t.set(0, 0, alpha[1]);
-    for (int i = 1; i < m; i++) {
-      t.set(i, i, alpha[i + 1]);
-      t.set(i, i - 1, betta[i + 1]);
-      t.set(i - 1, i, betta[i + 1]);
+    final Mx tPart = new VecBasedMx(T, T);
+    tPart.set(0, 0, alpha[1]);
+    for (int i = 1; i < T; i++) {
+      tPart.set(i, i, alpha[i + 1]);
+      tPart.set(i, i - 1, betta[i + 1]);
+      tPart.set(i - 1, i, betta[i + 1]);
     }
 
     // filling Lanczos transformation matrix V
-    v = new VecBasedMx(n, m);
-    for (int i = 1; i < m + 1; i++) {
+    final Mx vPart = new VecBasedMx(n, T);
+    for (int i = 1; i < T + 1; i++) {
       for (int j = 0; j < n; j++) {
-        v.set(j, i - 1, aVec.get(i).get(j));
+        vPart.set(j, i - 1, aVec.get(i).get(j));
       }
     }
+
+    return Pair.create(tPart, vPart);
   }
 }

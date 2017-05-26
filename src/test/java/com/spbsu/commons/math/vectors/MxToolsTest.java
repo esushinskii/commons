@@ -2,6 +2,8 @@ package com.spbsu.commons.math.vectors;
 
 import com.spbsu.commons.math.vectors.impl.mx.VecBasedMx;
 import com.spbsu.commons.math.vectors.impl.vectors.ArrayVec;
+import com.spbsu.commons.random.FastRandom;
+import com.spbsu.commons.util.Pair;
 import junit.framework.TestCase;
 
 public class MxToolsTest extends TestCase {
@@ -57,22 +59,24 @@ public class MxToolsTest extends TestCase {
   }
 
   // tests for the Lanczos algorithm
-  public void testGetLanczosT() {
-    Mx t = MxTools.getLanczosT(matrix, matrix.columns());
-    Mx s = MxTools.getLanczosT(matrix, matrix.columns());
-    assertTrue(t.equals(s));
-    assertEquals(t.hashCode(), s.hashCode());
-    assertEquals(matrix.columns(), t.columns());
-    assertEquals(t.get(0, 1), t.get(1, 0), 1e-3);
-    assertEquals(t.get(1, 2), t.get(2, 1), 1e-3);
-    assertEquals(t.get(2, 3), t.get(3, 2), 1e-3);
-  }
+  public void testLanczosTridiagonalization() {
+    FastRandom rng = new FastRandom();
 
-  public void testGetLanczosV() {
-    Mx v = MxTools.getLanczosV(matrix, matrix.columns());
-    Mx w = MxTools.getLanczosV(matrix, matrix.columns());
-    assertTrue(v.equals(w));
-    assertEquals(v.hashCode(), w.hashCode());
-    assertEquals(matrix.columns(), v.columns());
+    int test_num = 10;
+    double[] err = new double[test_num];
+
+    int n = 1000;
+    double d;
+
+    for (int i = 0; i < test_num; i++) {
+      Mx matrix = new VecBasedMx(n, VecTools.fillUniform(new ArrayVec(n * n), rng));
+      final Pair<Mx, Mx> pair = MxTools.lanczosTridiagonalization(matrix, matrix.columns());
+      Mx tPart = pair.first;
+      Mx vPart = pair.second;
+      d = VecTools.distance(matrix, MxTools.multiply(MxTools.multiply(vPart, tPart), MxTools.inverse(vPart)));
+      err[i] = d / Math.sqrt(n);
+    }
+
+    assertEquals(0, VecTools.sum(new ArrayVec(err)) / test_num, 100);
   }
 }
