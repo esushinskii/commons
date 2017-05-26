@@ -498,6 +498,7 @@ public class MxTools {
 
     int n = a.rows();
 
+    // TODO: unit random vector generator with VecTools
     UnitSphereRandomVectorGenerator uvg = new UnitSphereRandomVectorGenerator(n);
 
     ArrayList<Vec> aVec = new ArrayList<Vec>(m + 1);

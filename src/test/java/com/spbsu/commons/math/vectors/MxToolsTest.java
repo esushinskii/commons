@@ -60,6 +60,9 @@ public class MxToolsTest extends TestCase {
   public void testGetLanczosT() {
     Mx t = MxTools.getLanczosT(matrix, matrix.columns());
     assertEquals(matrix.columns(), t.columns());
+    assertEquals(t.get(0, 1), t.get(1, 0), 1e-3);
+    assertEquals(t.get(1, 2), t.get(2, 1), 1e-3);
+    assertEquals(t.get(2, 3), t.get(3, 2), 1e-3);
   }
 
   public void testGetLanczosV() {
