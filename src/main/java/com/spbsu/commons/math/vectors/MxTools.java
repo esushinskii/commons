@@ -515,8 +515,58 @@ public class MxTools {
     // filling Lanczos transformation matrix V
     final Mx vPart = new VecBasedMx(n, T);
     for (int i = 1; i < T + 1; i++) {
+      Vec tmp = aVec.get(i);
       for (int j = 0; j < n; j++) {
-        vPart.set(j, i - 1, aVec.get(i).get(j));
+        vPart.set(j, i - 1, tmp.get(j));
+      }
+    }
+
+    return Pair.create(tPart, vPart);
+  }
+
+  public static Pair<Mx, Mx> lanczosTridiagonalizationArrayVersion(final Mx a, final int T) {
+    double[] alpha = new double[T + 1];
+    double[] betta = new double[T + 1];
+
+    int n = a.columns();
+
+    FastRandom rng = new FastRandom();
+
+    Vec[] aVec = new Vec[T + 1];
+
+    aVec[0] = new ArrayVec(n);
+    Vec rndVec = VecTools.fillGaussian(new ArrayVec(n), rng);
+    aVec[1] = VecTools.scale(rndVec, 1 / VecTools.norm(rndVec));
+
+    Vec wx;
+    Vec w;
+
+    for (int i = 1; i < T; i++) {
+      wx = multiply(a, aVec[i]);
+      alpha[i] = VecTools.multiply(wx, aVec[i]);
+      w = VecTools.subtract(wx, VecTools.subtract(VecTools.scale(aVec[i], alpha[i]), VecTools.scale(aVec[i - 1], betta[i])));
+      betta[i + 1] = VecTools.norm(w);
+      aVec[i + 1] = VecTools.scale(w, 1 / betta[i + 1]);
+    }
+
+    wx = multiply(a, aVec[T]);
+    alpha[T] = VecTools.multiply(wx, aVec[T]);
+
+    // filling Lanczos tridiagonal matrix T
+    final Mx tPart = new VecBasedMx(T, T);
+    tPart.set(0, 0, alpha[1]);
+    for (int i = 1; i < T; i++) {
+      tPart.set(i, i, alpha[i + 1]);
+      tPart.set(i, i - 1, betta[i + 1]);
+      tPart.set(i - 1, i, betta[i + 1]);
+    }
+
+    // filling Lanczos transformation matrix V
+    final Mx vPart = new VecBasedMx(n, T);
+    for (int i = 1; i < T + 1; i++) {
+      Vec tmp = aVec[i];
+      for (int j = 0; j < n; j++) {
+        vPart.set(j, i - 1, tmp.get(j));
       }
     }
 

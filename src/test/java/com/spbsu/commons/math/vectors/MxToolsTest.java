@@ -66,17 +66,47 @@ public class MxToolsTest extends TestCase {
     double[] err = new double[test_num];
 
     int n = 1000;
-    double d;
 
     for (int i = 0; i < test_num; i++) {
       Mx matrix = new VecBasedMx(n, VecTools.fillUniform(new ArrayVec(n * n), rng));
       final Pair<Mx, Mx> pair = MxTools.lanczosTridiagonalization(matrix, matrix.columns());
       Mx tPart = pair.first;
       Mx vPart = pair.second;
-      d = VecTools.distance(matrix, MxTools.multiply(MxTools.multiply(vPart, tPart), MxTools.inverse(vPart)));
-      err[i] = d / Math.sqrt(n);
+      err[i] = VecTools.distance(matrix, MxTools.multiply(MxTools.multiply(vPart, tPart), MxTools.inverse(vPart)));
     }
 
-    assertEquals(0, VecTools.sum(new ArrayVec(err)) / test_num, 100);
+    assertEquals(0, VecTools.sum(new ArrayVec(err)) / test_num, 1000);
+  }
+
+  public void testLanczosTridiagonalizationPerformance() {
+    FastRandom rng = new FastRandom();
+
+    int test_num = 1000;
+    int n = 1000;
+
+    long startTime = System.currentTimeMillis();
+    for (int i = 0; i < test_num; i++) {
+      Mx matrix = new VecBasedMx(n, VecTools.fillUniform(new ArrayVec(n * n), rng));
+      final Pair<Mx, Mx> pair = MxTools.lanczosTridiagonalization(matrix, matrix.columns());
+    }
+    long finishTime = System.currentTimeMillis();
+
+    assertTrue((finishTime - startTime) < 1000 * test_num);
+  }
+
+  public void testLanczosTridiagonalizationArrayVersionPerformance() {
+    FastRandom rng = new FastRandom();
+
+    int test_num = 1000;
+    int n = 1000;
+
+    long startTime = System.currentTimeMillis();
+    for (int i = 0; i < test_num; i++) {
+      Mx matrix = new VecBasedMx(n, VecTools.fillUniform(new ArrayVec(n * n), rng));
+      final Pair<Mx, Mx> pair = MxTools.lanczosTridiagonalizationArrayVersion(matrix, matrix.columns());
+    }
+    long finishTime = System.currentTimeMillis();
+
+    assertTrue((finishTime - startTime) < 1000 * test_num);
   }
 }
